@@ -4,22 +4,22 @@
 int main(int argc, char* argv[])
 {
     {
-        unsigned int N = 2;
-
-        ThreadPool pool{N};
+       unsigned int N = 0;
 
         int number = 100000000;                                                    //N - number of threads(потоки)
         double low_limit, up_limit;                         //low/up_limit - integration limit
         std::stringstream A;
 
-        A << argv[1]<<' '<<argv[2];
-        A >> low_limit >> up_limit;
+        A << argv[1]<<' '<<argv[2]<<' '<<argv[3];
+        A >> N >> low_limit >> up_limit;
 
-        if(argc != 3){
-            std::cerr<<"Wrong input! Should be like ./a.out Left_limit Right_limit"<<std::endl;
+        if(argc != 4 || argv[0] <= 0){
+            std::cerr<<"Wrong input! Should be like ./ThreadPool Number_of_threads Left_limit Right_limit"<<std::endl;
             return 0;
         }
 
+        ThreadPool pool{N};
+        
         double limits_of_integration[N+1];
 
         for(int i = 0; i<=N; i++)
