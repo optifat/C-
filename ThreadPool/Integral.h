@@ -5,10 +5,7 @@
 #ifndef UNTITLED6_INTEGRAL_H
 #define UNTITLED6_INTEGRAL_H
 
-#include "iostream"
-#include "thread"
 #include "sstream"
-#include "vector"
 #include "cmath"
 
 double function(double x){                                                        //function value calculation
