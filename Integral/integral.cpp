@@ -62,5 +62,7 @@ int main(int argc, char* argv[])
     std::cout<<result<<std::endl;
     std::cerr << std::chrono::duration<unsigned long int, std::nano>(end - start).count() <<std::endl;
     
+    delete[] results;
+    
     return 0;
 }
