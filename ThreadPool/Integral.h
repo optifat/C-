@@ -12,7 +12,7 @@ double function(double x){                                                      
     return x*x*exp(x) - tan(sqrt(x));
 }
 
-double integrate(double lower_limit, double upper_limit, int number){               //number - number of integr steps
+double integrate(double lower_limit, double upper_limit, int number){             //number - number of integrating steps
     double current_result = 0;                                                    //calculating integral
     double step = (upper_limit-lower_limit)/number;
     for(int i = 0; i<number; i++)
