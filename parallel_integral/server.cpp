@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 
     std::stringstream A;
     if (argc == 5) {
-        A << argv[1] << " " << argv[2] << argv[3] << argv[4];
+        A << argv[1] << " " << argv[2] << " " << argv[3] << " " << argv[4];
     }
     else {
         std::cerr << "Wrong input! Please, enter number of connections, number of threads per connection and limits of "
@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
     }
     double step = number / number_of_connection;
 
+    //std::cout<<number_of_connection<<" "<<number_of_threads<<" "<<left_limit<<" "<<right_limit<<std::endl;
 
     time_t timer;
     int sockfd;
@@ -93,62 +94,65 @@ int main(int argc, char* argv[]) {
         perror("sigaction");
         exit(1);
     }
+    while(true) {
+        sin_size = sizeof(struct sockaddr_in);
 
-    sin_size = sizeof(struct sockaddr_in);
-
-    for (int i = 0; i < number_of_connection; i++) {
-        int new_fd = 0;
-        struct sockaddr_in new_addr;
-        if ((new_fd = accept(sockfd, (struct sockaddr *) &new_addr, &sin_size)) == -1) {
-            //perror("accept");
-            continue;
-        } else {
-            printf("Received request from Client: %s:%d\n",
-                   inet_ntoa(new_addr.sin_addr), MYPORT);
-        }
-        sockets.push_back(new_fd);
-        their_addrs.push_back(new_addr);
-    }
-    auto *results = new double[number_of_connection];
-
-    if (!fork()) {
-        std::cout<<(!fork())<<std::endl;
-        timer = time(NULL);
-
-        for (auto sock : sockets) {
-            if (send(sock, ctime(&timer), 30, 0) == -1) {
-                perror("send");
-            }
-        }
-        std::vector<std::thread> threads;
         for (int i = 0; i < number_of_connection; i++) {
-            threads.emplace_back([=, &limits_of_integration] {
-                std::stringstream B;
-                B << number_of_threads << " " << limits_of_integration[i] << " " << limits_of_integration[i+1] << " " << step;
-                char command[MAXDATASIZE];
-                char mes[500];
-                B >> command;
-                send(sockets[i], command, MAXDATASIZE - 1, 0);
-                recv(sockets[i], mes, MAXDATASIZE - 1, 0);
-                std::stringstream A;
-                B << mes;
-                double  current_result;
-                B >> current_result;
-                results[i] = current_result;
-                close(sockets[i]);
-            });
+            int new_fd = 0;
+            struct sockaddr_in new_addr;
+            if ((new_fd = accept(sockfd, (struct sockaddr *) &new_addr, &sin_size)) == -1) {
+                //perror("accept");
+                //continue;
+            } else {
+                printf("Received request from Client: %s:%d\n",
+                       inet_ntoa(new_addr.sin_addr), MYPORT);
+            }
+            sockets.push_back(new_fd);
+            their_addrs.push_back(new_addr);
         }
+        auto *results = new double[number_of_connection];
 
-        for (auto &th: threads) {
-            th.join();
+        if (!fork()) {
+            timer = time(NULL);
+            char text = 'g';
+            for (auto sock : sockets) {
+                if (send(sock, ctime(&timer), 30, 0) == -1) {
+                    perror("send");
+                }
+            }
+            std::vector<std::thread> threads;
+            for (int i = 0; i < number_of_connection; i++) {
+                threads.emplace_back([=, &limits_of_integration, &results] {
+                    std::stringstream B;
+                    B << number_of_threads << " " << limits_of_integration[i] << " " << limits_of_integration[i + 1]
+                      << " " << step;
+                    std::string command;
+                    char mes[500];
+                    command = B.str();
+                    std::cout<<command<<std::endl;
+                    std::cout<<send(sockets[i], &command[0u], command.length(), 0)<<std::endl;
+                    std::cout<<recv(sockets[i], mes, MAXDATASIZE - 1, 0)<<std::endl;   //receives but what's later?
+                    std::stringstream C;
+                    C << mes;
+                    //std::cout << mes <<std::endl;
+                    //double current_result; //= atof(mes);
+                    //C >> current_result;
+                    //std::cout<<current_result;
+                    C >> results[i];
+                    close(sockets[i]);
+                });
+            }
+
+            for (auto &th: threads) {
+                th.join();
+            }
+
+            double result = 0;
+            for (int i = 0; i < number_of_connection; i++)
+                result += results[i];
+            std::cout << result << std::endl;
+            break;
         }
-
     }
-
-    double result = 0;
-
-    for (int i = 0;i < number_of_connection; i++)
-        result += results[i];
-
     return 0;
 }

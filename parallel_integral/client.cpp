@@ -83,13 +83,18 @@ int main(int argc, char *argv[]) {
     printf("Remote Host: %s\n", inet_ntoa(their_addr.sin_addr));
     printf("Received daytime data: %s\n",buf);
     char mes[500];
+    bzero(mes, MAXDATASIZE);
 
-    recv(sockfd, mes, MAXDATASIZE - 1, MSG_DONTWAIT);
+    std::cout<<recv(sockfd, &mes, MAXDATASIZE, 0)<<std::endl;
+
     std::stringstream A, B;
-    int number_of_threads;
+    int number_of_threads = 0;
     double left_limit, right_limit, step;
     A << mes;
     A >> number_of_threads >> left_limit >> right_limit >> step;
+
+
+    //doesn't count integral properly
 
     double limits_of_integration[number_of_threads];
 
@@ -109,15 +114,18 @@ int main(int argc, char *argv[]) {
     for(auto &th : threads)
         th.join();
 
+
     double result = 0;
 
-    for (int i = 0;i < number_of_threads; i++)
+    for (int i = 0; i<number_of_threads; i++)
         result += results[i];
 
-
-    A << result;
-    A >> mes;
-
-    send(sockfd, mes, strlen(mes), MSG_DONTWAIT);
+    std::stringstream C;
+    bzero(mes, MAXDATASIZE);
+    std::string answer;
+    C << result;
+    answer = C.str();
+    std::cout<<send(sockfd, &answer[0u], answer.length(), 0)<<std::endl;    //doesn't send message
     return 0;
 }
+                  //client is ready

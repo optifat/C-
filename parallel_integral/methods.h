@@ -33,6 +33,7 @@ void integrate(double lower_limit, double upper_limit, int number, double &resul
     double step = (upper_limit-lower_limit)/number;
     for(int i = 0; i<number; i++)
         current_result += step * function(lower_limit+(i+1)*step);
+    result = current_result;
 }
 
 void send_command(int socket, int number_of_threads, double left_limit, double right_limit, double step){
