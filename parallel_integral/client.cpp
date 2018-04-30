@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     std::string answer;
     C << result;
     answer = C.str();
-    std::cout<<send(sockfd, &answer[0u], answer.length(), 0)<<std::endl;    //doesn't send message
+    send(sockfd, &answer[0u], answer.length(), 0);    //doesn't send message
     return 0;
 }
                   //client is ready

@@ -111,10 +111,10 @@ int main(int argc, char* argv[]) {
             their_addrs.push_back(new_addr);
         }
         auto *results = new double[number_of_connection];
+        double result = 0;
 
         if (!fork()) {
             timer = time(NULL);
-            char text = 'g';
             for (auto sock : sockets) {
                 if (send(sock, ctime(&timer), 30, 0) == -1) {
                     perror("send");
@@ -129,15 +129,10 @@ int main(int argc, char* argv[]) {
                     std::string command;
                     char mes[500];
                     command = B.str();
-                    std::cout<<command<<std::endl;
-                    std::cout<<send(sockets[i], &command[0u], command.length(), 0)<<std::endl;
-                    std::cout<<recv(sockets[i], mes, MAXDATASIZE - 1, 0)<<std::endl;   //receives but what's later?
+                    send(sockets[i], &command[0u], command.length(), 0);
+                    recv(sockets[i], mes, MAXDATASIZE - 1, 0);   //receives but what's later?
                     std::stringstream C;
                     C << mes;
-                    //std::cout << mes <<std::endl;
-                    //double current_result; //= atof(mes);
-                    //C >> current_result;
-                    //std::cout<<current_result;
                     C >> results[i];
                     close(sockets[i]);
                 });
@@ -147,11 +142,12 @@ int main(int argc, char* argv[]) {
                 th.join();
             }
 
-            double result = 0;
             for (int i = 0; i < number_of_connection; i++)
                 result += results[i];
+        }
+        if(result) {
             std::cout << result << std::endl;
-            break;
+            exit(0);
         }
     }
     return 0;
