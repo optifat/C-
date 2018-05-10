@@ -14,9 +14,12 @@
 #include <vector>
 #include "sstream"
 #include "methods.h"
+#include "mutex"
 
 #define PORT 1025 /*This is the port for the client server connection*/
 #define MAXDATASIZE 500 // max number of bytes we can get at once
+
+
 
 
 int main(int argc, char *argv[]) {

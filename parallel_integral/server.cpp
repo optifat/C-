@@ -16,11 +16,13 @@
 #include "thread"
 #include <vector>
 #include "methods.h"
+#include "mutex"
 
 #define MYPORT 1025 // the port users will be connecting to
 #define BACKLOG 10 // how many pending connections queue will hold
 #define MAXDATASIZE 500
 
+std::mutex my_lock;
 
 void sigchld_handler(int s)
 {
@@ -94,7 +96,7 @@ int main(int argc, char* argv[]) {
         perror("sigaction");
         exit(1);
     }
-    while(true) {
+    //while(true) {
         sin_size = sizeof(struct sockaddr_in);
 
         for (int i = 0; i < number_of_connection; i++) {
@@ -113,7 +115,7 @@ int main(int argc, char* argv[]) {
         auto *results = new double[number_of_connection];
         double result = 0;
 
-        if (!fork()) {
+        //if (!fork()) {
             timer = time(NULL);
             for (auto sock : sockets) {
                 if (send(sock, ctime(&timer), 30, 0) == -1) {
@@ -129,7 +131,9 @@ int main(int argc, char* argv[]) {
                     std::string command;
                     char mes[500];
                     command = B.str();
+                    my_lock.lock();
                     send(sockets[i], &command[0u], command.length(), 0);
+                    my_lock.unlock();
                     recv(sockets[i], mes, MAXDATASIZE - 1, 0);   //receives but what's later?
                     std::stringstream C;
                     C << mes;
@@ -144,11 +148,12 @@ int main(int argc, char* argv[]) {
 
             for (int i = 0; i < number_of_connection; i++)
                 result += results[i];
-        }
+        //}
         if(result) {
             std::cout << result << std::endl;
             exit(0);
         }
-    }
+    //}
+
     return 0;
 }
